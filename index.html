@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Bewerbungsmappe de Paola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
+body { margin: 0; font: 14px/1.5 system-ui, sans-serif }
+img { max-width: 100% }
+[hidden] { display: none !important }
+</style>
+<style>
+
+/* Layout: herramienta de tres pasos (CV → qué busco → ofertas) con pestañas; el CV se edita a la izquierda y se ve como hoja A4 a la derecha. */
+:root {
+  --bg: #F2F4F6; --surface: #FFFFFF; --sunk: #E9EDF1; --ink: #17212B; --muted: #5A6673; --line: #D6DCE3;
+  --accent: #1F4E5F; --accent-ink: #FFFFFF; --brass: #8E6A22; --brass-soft: #F1E7D0;
+  --good: #2C7A4C; --good-soft: #DDF0E4; --warn: #9A5B0E; --warn-soft: #F7E8D2; --bad: #A23B3B; --bad-soft: #F6DEDE;
+  --paper: #FFFFFF; --paper-ink: #1B1F24; --paper-muted: #5B6470; --paper-line: #D9DEE4; --paper-accent: #1F4E5F;
+  --f-display: "DM Serif Display", Georgia, "Times New Roman", serif;
+  --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F151B; --surface: #172029; --sunk: #121A22; --ink: #E5EBF0; --muted: #98A5B1; --line: #2A3642;
+  --accent: #82BCCD; --accent-ink: #0D1A20; --brass: #D7B46C; --brass-soft: #3A3020;
+  --good: #6CC08E; --good-soft: #1C3326; --warn: #E2A75A; --warn-soft: #3A2B17; --bad: #E58A8A; --bad-soft: #3B2020;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0F151B; --surface: #172029; --sunk: #121A22; --ink: #E5EBF0; --muted: #98A5B1; --line: #2A3642;
+  --accent: #82BCCD; --accent-ink: #0D1A20; --brass: #D7B46C; --brass-soft: #3A3020;
+  --good: #6CC08E; --good-soft: #1C3326; --warn: #E2A75A; --warn-soft: #3A2B17; --bad: #E58A8A; --bad-soft: #3B2020;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5 }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px }
+h1, h2, h3 { text-wrap: balance; margin: 0 }
+a { color: var(--accent) }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line) }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); font-weight: 600 }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin-top: 4px }
+.status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted) }
+.status.ok .dot { background: var(--good) } .status.busy .dot { background: var(--warn) } .status.err .dot { background: var(--bad) }
+
+nav.tabs { display: flex; gap: 4px; margin: 18px 0 22px; overflow-x: auto; scrollbar-width: none }
+nav.tabs button { font: inherit; font-weight: 600; border: 1px solid transparent; background: none; color: var(--muted); padding: 9px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 8px }
+nav.tabs button .n { font-size: 12px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line) }
+nav.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); border-color: var(--line) }
+nav.tabs button[aria-selected="true"] .n { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+nav.tabs .count { font-size: 12px; background: var(--brass-soft); color: var(--brass); padding: 1px 8px; border-radius: 999px }
+
+.banner { padding: 12px 14px; border-radius: var(--r); background: var(--warn-soft); color: var(--ink); margin-bottom: 18px; font-size: 14px }
+.banner b { color: var(--warn) }
+
+/* CV tab */
+.cv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 28px; align-items: start }
+@media (max-width: 900px) { .cv-grid { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px }
+.stack { display: grid; gap: 14px }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0 }
+.group { border-top: 1px solid var(--line); padding-top: 16px }
+.group:first-child { border-top: 0; padding-top: 0 }
+.group > legend, .group-h { font-family: var(--f-display); font-size: 21px; margin-bottom: 4px; padding: 0 }
+.group > legend { float: left; width: 100% }
+.group > legend + * { clear: both }
+.photo-row label.btn { justify-self: start }
+.hint { color: var(--muted); font-size: 13px; margin: 0 0 10px }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 12px }
+label.f { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); min-width: 0 }
+label.f.wide { grid-column: 1 / -1 }
+input[type=text], input[type=email], input[type=tel], input[type=date], input[type=month], input[type=number], input[type=url], select, textarea {
+  font: inherit; font-weight: 400; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0 }
+textarea { resize: vertical; min-height: 84px }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7 }
+label.chk { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); font-weight: 500; cursor: pointer }
+input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px }
+.entry { background: var(--sunk); border-radius: 8px; padding: 12px; display: grid; gap: 10px; border: 1px solid var(--line) }
+.entry-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 600 }
+.entry-h .acts { display: flex; gap: 4px }
+.list { display: grid; gap: 10px }
+
+.btn { font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 9px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; line-height: 1.2 }
+.btn:hover { border-color: var(--accent) }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); padding: 6px 8px }
+.btn.ghost:hover { color: var(--ink) }
+.btn.small { font-size: 13px; padding: 6px 10px }
+.btn:disabled { opacity: .5; cursor: not-allowed }
+.btn.add { border-style: dashed; justify-self: start; color: var(--accent) }
+
+.photo-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap }
+.photo-box { width: 84px; aspect-ratio: 35 / 45; border-radius: 6px; background: var(--sunk); border: 1px dashed var(--line); display: grid; place-items: center; overflow: hidden; color: var(--muted); font-size: 12px; text-align: center }
+.photo-box img { width: 100%; height: 100%; object-fit: cover }
+
+.preview-col { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0 }
+@media (max-width: 900px) { .preview-col { position: static } }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface) }
+.seg button { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; background: none; border: 0; color: var(--muted); cursor: pointer }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+.note { font-size: 13px; color: var(--muted) }
+.note.warn { color: var(--warn) }
+.sheet-wrap { width: 100%; overflow: hidden; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 10px 30px rgba(20,40,60,.12) }
+.sheet-scale { transform-origin: top left; width: 794px }
+
+/* The A4 sheet: always paper-white, in both themes */
+.sheet { width: 794px; min-height: 1123px; background: var(--paper); color: var(--paper-ink); font-family: var(--f-body); font-size: 13px; line-height: 1.5; padding: 64px 68px 56px; display: flex; flex-direction: column; gap: 22px }
+.sheet .s-head { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; padding-bottom: 18px; border-bottom: 2px solid var(--paper-accent) }
+.sheet .s-doc { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--paper-accent); font-weight: 700 }
+.sheet .s-name { font-family: var(--f-display); font-size: 38px; line-height: 1.05; margin: 6px 0 4px; color: var(--paper-ink) }
+.sheet .s-title { font-size: 15px; color: var(--paper-muted); font-weight: 500 }
+.sheet .s-contact { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--paper-ink) }
+.sheet .s-photo { width: 132px; height: 170px; flex: none; object-fit: cover; border-radius: 3px; background: #EEF1F4 }
+.sheet .s-sec h3 { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-accent); font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid var(--paper-line); margin-bottom: 10px }
+.sheet .s-item { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 5px 0 }
+.sheet .s-when { color: var(--paper-muted); font-variant-numeric: tabular-nums; font-size: 12.5px }
+.sheet .s-what b { font-weight: 700 }
+.sheet .s-what .s-sub { color: var(--paper-muted) }
+.sheet .s-what ul { margin: 4px 0 0; padding-left: 16px }
+.sheet .s-what li { margin: 1px 0 }
+.sheet .s-sum { margin: 0; max-width: 62ch }
+.sheet .s-placeholder { color: #A6AEB8; font-style: italic }
+.sheet .s-sign { margin-top: auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: end; gap: 20px; font-size: 12.5px; color: var(--paper-muted) }
+.sheet .s-sign .line { border-top: 1px solid var(--paper-ink); min-width: 220px; padding-top: 4px; text-align: center; color: var(--paper-ink) }
+#pdfstage { position: fixed; left: -12000px; top: 0 }
+
+/* Prefs tab */
+.prefs-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: start }
+@media (max-width: 900px) { .prefs-grid { grid-template-columns: minmax(0, 1fr) } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip-opt { position: relative }
+.chip-opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer }
+.chip-opt span { display: inline-flex; flex-direction: column; padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 14px; font-weight: 600; line-height: 1.2 }
+.chip-opt span small { font-weight: 400; color: var(--muted); font-size: 12px }
+.chip-opt input:checked + span { border-color: var(--accent); background: var(--accent); color: var(--accent-ink) }
+.chip-opt input:checked + span small { color: inherit; opacity: .8 }
+.chip-opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px }
+.how { display: grid; gap: 12px; font-size: 14px }
+.how ol { margin: 0; padding-left: 20px; display: grid; gap: 6px }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px }
+.kv dt { color: var(--muted) } .kv dd { margin: 0; font-weight: 600 }
+
+/* Offers tab */
+.jobs-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 14px }
+.filters { display: flex; flex-wrap: wrap; gap: 6px }
+.filters button { font: inherit; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer }
+.filters button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink) }
+.filters button .c { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 4px }
+.jobs { display: grid; gap: 12px }
+.job { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px }
+.job.descartada { opacity: .6 }
+.score { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; border: 3px solid var(--line); color: var(--muted); line-height: 1 }
+.score small { display: block; font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-top: 2px }
+.score.hi { border-color: var(--good); color: var(--good); background: var(--good-soft) }
+.score.mid { border-color: var(--warn); color: var(--warn); background: var(--warn-soft) }
+.score.lo { border-color: var(--line); color: var(--muted) }
+.job h3 { font-size: 17px; font-weight: 700; line-height: 1.3 }
+.job .meta { color: var(--muted); font-size: 14px; margin-top: 2px }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 }
+.tag { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--sunk); color: var(--muted); border: 1px solid var(--line) }
+.tag.home { background: var(--good-soft); color: var(--good); border-color: transparent }
+.tag.nohome { background: var(--bad-soft); color: var(--bad); border-color: transparent }
+.job p { margin: 0; max-width: 75ch }
+.why { margin-top: 8px !important; font-size: 14px; color: var(--muted) }
+.why b { color: var(--ink) }
+.job-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px }
+.job-acts select { width: auto; padding: 7px 10px; font-size: 13px; font-weight: 600 }
+.letter { margin-top: 12px; display: grid; gap: 8px }
+.letter textarea { min-height: 260px; font-size: 14px; line-height: 1.55 }
+.empty { text-align: center; padding: 40px 16px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r) }
+.empty h3 { font-family: var(--f-display); font-weight: 400; color: var(--ink); font-size: 22px; margin-bottom: 6px }
+details.addjob { margin-bottom: 14px }
+details.addjob summary { cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; display: inline-flex; gap: 6px; align-items: center }
+details.addjob summary::-webkit-details-marker { display: none }
+details.addjob[open] summary { margin-bottom: 12px }
+.err { color: var(--bad); font-size: 13px }
+[data-ro] input, [data-ro] textarea, [data-ro] select { pointer-events: none; opacity: .7 }
+@media (prefers-reduced-motion: no-preference) { .btn, nav.tabs button, .chip-opt span { transition: background-color .15s, border-color .15s, color .15s } }
+/* app-only */
+.login { max-width: 420px; margin: 8vh auto 0; display: grid; gap: 14px }
+.login h1 { font-size: clamp(30px, 6vw, 40px) }
+.top-right { display: grid; gap: 6px; justify-items: end }
+@media (max-width: 600px) { .top-right { justify-items: start } }
+.spend { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Login -->
+  <section class="login panel" id="login" hidden>
+    <div class="eyebrow">Bewerbungsmappe</div>
+    <h1>Entra con tu correo</h1>
+    <p class="hint" style="margin:0">Te mandamos un enlace para entrar. Solo funciona con los correos autorizados.</p>
+    <form id="login-form" class="stack">
+      <label class="f">Correo<input type="email" id="login-email" autocomplete="email" required placeholder="tu@correo.com"></label>
+      <button class="btn primary" type="submit" id="login-go">Enviarme el enlace</button>
+      <p class="note" id="login-msg" role="status"></p>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+  <header class="top">
+    <div>
+      <div class="eyebrow">Bewerbungsmappe · Alemania · Hostelería</div>
+      <h1 id="hello">Paola, a por el próximo trabajo</h1>
+    </div>
+    <div class="top-right">
+      <div class="status" id="status" role="status"><span class="dot"></span><span id="status-t">Conectando…</span></div>
+      <div class="spend" id="spend"></div>
+      <button type="button" class="btn ghost small" id="logout">Salir</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-cv" data-tab="cv" aria-selected="true"><span class="n">1</span>Mi CV</button>
+    <button role="tab" id="tab-busqueda" data-tab="busqueda" aria-selected="false"><span class="n">2</span>Qué busco</button>
+    <button role="tab" id="tab-ofertas" data-tab="ofertas" aria-selected="false"><span class="n">3</span>Ofertas <span class="count" id="jobs-count">0</span></button>
+  </nav>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <section id="view-cv" role="tabpanel">
+    <div class="cv-grid">
+      <form class="panel stack" id="cv-form" autocomplete="on"></form>
+      <div class="preview-col">
+        <div class="toolbar">
+          <div class="seg" role="group" aria-label="Idioma del CV">
+            <button type="button" data-lang="de" aria-pressed="true">Deutsch</button>
+            <button type="button" data-lang="en" aria-pressed="false">English</button>
+            <button type="button" data-lang="es" aria-pressed="false">Español</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn" id="btn-translate" hidden>Traducir con IA</button>
+            <button type="button" class="btn primary" id="btn-pdf">Descargar PDF</button>
+          </div>
+        </div>
+        <div class="note" id="tr-note"></div>
+        <div class="sheet-wrap" id="sheet-wrap"><div class="sheet-scale" id="sheet-scale"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-busqueda" role="tabpanel" hidden>
+    <div class="prefs-grid">
+      <form class="panel stack" id="prefs-form"></form>
+      <aside class="panel how">
+        <div class="group-h">Cómo funciona la búsqueda</div>
+        <ol>
+          <li>Rellena lo que buscas aquí. Se guarda solo.</li>
+          <li>Cada mañana Claude busca ofertas nuevas en Hogapage, StepStone, Indeed, Hotelcareer, Rolling Pin y la Jobbörse de la Arbeitsagentur.</li>
+          <li>Las deja en <b>Ofertas</b>, puntuadas según tu CV y lo que pides.</li>
+          <li>Tú eliges, pides la carta en alemán y la envías desde la web de la oferta.</li>
+        </ol>
+        <dl class="kv">
+          <dt>Última búsqueda</dt><dd id="last-search">Todavía ninguna</dd>
+        </dl>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn" id="btn-search">Buscar ahora</button>
+          <span class="note" id="search-msg"></span>
+        </div>
+        <p class="hint" style="margin:0">¿Ves una oferta por tu cuenta? Pégala en <b>Ofertas → Añadir una oferta</b> y la puntúa igual.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="view-ofertas" role="tabpanel" hidden>
+    <details class="addjob panel" id="addjob">
+      <summary>+ Añadir una oferta que has visto</summary>
+      <div class="stack">
+        <label class="f">Enlace de la oferta<input type="url" id="add-url" placeholder="https://www.stepstone.de/…"></label>
+        <label class="f">Texto de la oferta (cópialo y pégalo entero)<textarea id="add-text" placeholder="Wir suchen ab sofort eine Servicekraft (m/w/d) für unser 4-Sterne-Hotel … Unterkunft kann gestellt werden …"></textarea></label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn primary" id="add-go">Analizar y añadir</button>
+          <span class="note" id="add-msg"></span>
+        </div>
+      </div>
+    </details>
+    <div class="jobs-bar">
+      <div class="filters" id="filters" role="group" aria-label="Filtrar por estado"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="note" id="search-msg2"></span>
+        <button type="button" class="btn small" id="btn-score" hidden>Puntuar con mi CV</button>
+        <button type="button" class="btn small primary" id="btn-search2">Buscar ofertas ahora</button>
+      </div>
+    </div>
+    <div class="jobs" id="jobs"></div>
+  </section>
+  </div>
+</div>
+<div id="pdfstage" aria-hidden="true"></div>
+
+<script>
+(() => {
+"use strict";
+const SUPABASE_URL = "https://vvgotimtxlpdgbvfpojr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_5SWNh_bjrk7M26ih6t5Kdg_F_gag-JS";
+const MONTHLY_CAP = 25;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- state ---------- */
+const blankCv = () => ({ name: "", headline: "", birth: "", nationality: "", phone: "", email: "", city: "", photo: "",
+  summary: "", experience: [], education: [], languages: [], skills: "", license: "", availableFrom: "", other: "", tr: {} });
+const blankPrefs = () => ({ zones: "", roles: [], keywords: "", exclude: "", accommodation: "obligatorio", contract: [], startFrom: "", salaryMin: "", notes: "" });
+let cv = blankCv(), prefs = blankPrefs(), jobs = [], lang = "de", filter = "activas", started = false;
+const openLetters = new Set(), busyJobs = new Set(), jobErrors = {};
+
+const LISTS = {
+  experience: { label: "Puesto", blank: () => ({ role: "", company: "", place: "", from: "", to: "", current: false, tasks: "" }) },
+  education: { label: "Formación", blank: () => ({ title: "", school: "", place: "", from: "", to: "" }) },
+  languages: { label: "Idioma", blank: () => ({ lang: "", level: "B1", native: false }) },
+};
+const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const ROLES = [["Camarera de sala", "Servicekraft"], ["Recepción", "Rezeption"], ["Pisos / habitaciones", "Housekeeping"],
+  ["Ayudante de cocina", "Küchenhilfe"], ["Cocinera", "Köchin"], ["Barra", "Barkeeper"], ["Desayunos", "Frühstücksservice"],
+  ["Office / friegaplatos", "Spülkraft"], ["Animación", "Animation"], ["Spa", "Wellness"]];
+const CONTRACTS = [["Jornada completa", "Vollzeit"], ["Media jornada", "Teilzeit"], ["Temporada", "Saisonstelle"], ["Minijob", "Minijob"]];
+const STATUSES = [["nueva", "Nueva"], ["interesa", "Me interesa"], ["enviada", "Enviada"], ["entrevista", "Entrevista"], ["descartada", "Descartada"]];
+
+const L = {
+  de: { doc: "Lebenslauf", personal: "Persönliche Daten", birth: "Geburtsdatum", nat: "Staatsangehörigkeit", profile: "Profil",
+    exp: "Berufserfahrung", edu: "Ausbildung", langs: "Sprachkenntnisse", skills: "Kenntnisse", other: "Sonstiges",
+    license: "Führerschein", avail: "Verfügbar ab", now: "heute", native: "Muttersprache", place: "Ort, Datum",
+    lv: { A1: "Grundkenntnisse", A2: "Grundkenntnisse", B1: "gute Kenntnisse", B2: "sehr gute Kenntnisse", C1: "verhandlungssicher", C2: "fließend" } },
+  en: { doc: "Curriculum Vitae", personal: "Personal details", birth: "Date of birth", nat: "Nationality", profile: "Profile",
+    exp: "Work experience", edu: "Education", langs: "Languages", skills: "Skills", other: "Other",
+    license: "Driving licence", avail: "Available from", now: "present", native: "native", place: "Place, date",
+    lv: { A1: "basic", A2: "elementary", B1: "intermediate", B2: "upper intermediate", C1: "advanced", C2: "proficient" } },
+  es: { doc: "Currículum", personal: "Datos personales", birth: "Fecha de nacimiento", nat: "Nacionalidad", profile: "Perfil",
+    exp: "Experiencia profesional", edu: "Formación", langs: "Idiomas", skills: "Competencias", other: "Otros datos",
+    license: "Carné de conducir", avail: "Disponible desde", now: "actualidad", native: "lengua materna", place: "Lugar y fecha",
+    lv: { A1: "básico", A2: "básico", B1: "intermedio", B2: "intermedio alto", C1: "avanzado", C2: "dominio" } },
+};
+
+/* ---------- helpers ---------- */
+function setPath(obj, path, val) {
+  const ks = path.split("."); let o = obj;
+  for (let i = 0; i < ks.length - 1; i++) o = o[/^\d+$/.test(ks[i]) ? +ks[i] : ks[i]];
+  o[ks.at(-1)] = val;
+}
+function getPath(obj, path) { return path.split(".").reduce((o, k) => o?.[k], obj) }
+const fmtMonth = m => { if (!m) return ""; const [y, mo] = m.split("-"); return mo ? `${mo}/${y}` : y };
+const fmtDate = (d, lg) => { if (!d) return ""; const [y, m, dd] = d.split("-"); return lg === "en" ? `${dd}/${m}/${y}` : `${dd}.${m}.${y}` };
+function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return String(h) }
+const lines = t => String(t || "").split(/\n+/).map(s => s.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+
+function setStatus(t, kind = "") { $("#status").className = "status " + kind; $("#status-t").textContent = t }
+function banner(html) { const b = $("#banner"); if (!html) { b.hidden = true; return } b.innerHTML = html; b.hidden = false }
+
+async function ai(action, payload = {}) {
+  const { data, error } = await sb.functions.invoke("ai", { body: { action, ...payload } });
+  if (error) {
+    let msg = "No ha funcionado. Prueba otra vez en un momento.";
+    try { const j = await error.context.json(); if (j?.error) msg = j.error } catch {}
+    throw new Error(msg);
+  }
+  refreshSpend();
+  return data;
+}
+
+/* ---------- form rendering ---------- */
+function field(scope, path, label, type = "text", ph = "", cls = "") {
+  const id = "f-" + scope + "-" + path.replace(/\./g, "-");
+  const v = getPath(scope === "cv" ? cv : prefs, path);
+  const bind = `data-bind="${scope}:${path}" id="${id}" name="${id}"`;
+  if (type === "checkbox") return `<label class="chk ${cls}"><input type="checkbox" ${bind} ${v ? "checked" : ""}>${esc(label)}</label>`;
+  if (type === "textarea") return `<label class="f ${cls}">${esc(label)}<textarea ${bind} placeholder="${esc(ph)}">${esc(v)}</textarea></label>`;
+  if (type === "level") return `<label class="f ${cls}">${esc(label)}<select ${bind}>${LEVELS.map(l => `<option ${l === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>`;
+  return `<label class="f ${cls}">${esc(label)}<input type="${type}" ${bind} value="${esc(v)}" placeholder="${esc(ph)}"></label>`;
+}
+function entryHead(list, i, n) {
+  return `<div class="entry-h"><span>${LISTS[list].label} ${i + 1}</span><span class="acts">
+    <button type="button" class="btn ghost" data-move="${list}:${i}:-1" ${i === 0 ? "disabled" : ""} aria-label="Subir">↑</button>
+    <button type="button" class="btn ghost" data-move="${list}:${i}:1" ${i === n - 1 ? "disabled" : ""} aria-label="Bajar">↓</button>
+    <button type="button" class="btn ghost" data-del="${list}:${i}">Quitar</button></span></div>`;
+}
+function renderCvForm() {
+  const ex = cv.experience.map((e, i) => `<div class="entry">${entryHead("experience", i, cv.experience.length)}
+    <div class="row">${field("cv", `experience.${i}.role`, "Puesto", "text", "Camarera de sala")}${field("cv", `experience.${i}.company`, "Empresa", "text", "Hotel Mirador del Mar")}${field("cv", `experience.${i}.place`, "Lugar", "text", "Málaga")}</div>
+    <div class="row">${field("cv", `experience.${i}.from`, "Desde", "month")}${e.current ? "" : field("cv", `experience.${i}.to`, "Hasta", "month")}</div>
+    ${field("cv", `experience.${i}.current`, "Trabajo aquí ahora", "checkbox")}
+    ${field("cv", `experience.${i}.tasks`, "Qué hacías (una cosa por línea)", "textarea", "Servicio de mesas para 60 comensales\nCobro y cierre de caja\nAtención a clientes en inglés")}</div>`).join("");
+  const ed = cv.education.map((e, i) => `<div class="entry">${entryHead("education", i, cv.education.length)}
+    <div class="row">${field("cv", `education.${i}.title`, "Título o curso", "text", "Técnico en Servicios de Restauración")}${field("cv", `education.${i}.school`, "Centro", "text", "IES La Rosaleda")}${field("cv", `education.${i}.place`, "Lugar", "text", "Málaga")}</div>
+    <div class="row">${field("cv", `education.${i}.from`, "Desde", "month")}${field("cv", `education.${i}.to`, "Hasta", "month")}</div></div>`).join("");
+  const lg = cv.languages.map((e, i) => `<div class="entry">${entryHead("languages", i, cv.languages.length)}
+    <div class="row">${field("cv", `languages.${i}.lang`, "Idioma", "text", "Alemán")}${e.native ? "" : field("cv", `languages.${i}.level`, "Nivel (MCER)", "level")}</div>
+    ${field("cv", `languages.${i}.native`, "Es mi lengua materna", "checkbox")}</div>`).join("");
+
+  $("#cv-form").innerHTML = `
+    <fieldset class="group"><legend>Datos personales</legend>
+      <p class="hint">En Alemania es normal poner foto, fecha de nacimiento y nacionalidad.</p>
+      <div class="photo-row">
+        <div class="photo-box" id="photo-box">${cv.photo ? `<img src="${cv.photo}" alt="Tu foto">` : "Sin foto"}</div>
+        <div style="display:grid;gap:6px">
+          <label class="btn small" for="f-photo" style="cursor:pointer">${cv.photo ? "Cambiar foto" : "Subir foto"}</label>
+          <input type="file" id="f-photo" accept="image/*" hidden>
+          ${cv.photo ? `<button type="button" class="btn ghost small" id="photo-del">Quitar foto</button>` : ""}
+          <span class="note">Fondo claro, de frente, sonriendo.</span>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        ${field("cv", "name", "Nombre y apellidos", "text", "Paola …", "wide")}
+        ${field("cv", "headline", "Qué trabajo buscas (titular)", "text", "Camarera y recepcionista con experiencia en hoteles", "wide")}
+        ${field("cv", "birth", "Fecha de nacimiento", "date")}
+        ${field("cv", "nationality", "Nacionalidad", "text", "Española")}
+        ${field("cv", "phone", "Teléfono", "tel", "+34 600 000 000")}
+        ${field("cv", "email", "Correo", "email", "paola@ejemplo.com")}
+        ${field("cv", "city", "Dónde vives ahora", "text", "Málaga, España", "wide")}
+      </div></fieldset>
+    <fieldset class="group"><legend>Sobre ti</legend>
+      <p class="hint">Dos o tres frases. Puedes escribirlo en español; la IA lo pasa al alemán.</p>
+      ${field("cv", "summary", "Perfil", "textarea", "Camarera con 5 años de experiencia en hoteles de costa. Trato cercano con el cliente, acostumbrada a temporada alta y a trabajar en equipo.")}</fieldset>
+    <fieldset class="group"><legend>Experiencia</legend>
+      <p class="hint">Empieza por el trabajo más reciente.</p>
+      <div class="list">${ex}</div><button type="button" class="btn add" data-add="experience" style="margin-top:10px">+ Añadir trabajo</button></fieldset>
+    <fieldset class="group"><legend>Formación</legend>
+      <div class="list">${ed}</div><button type="button" class="btn add" data-add="education" style="margin-top:10px">+ Añadir formación</button></fieldset>
+    <fieldset class="group"><legend>Idiomas</legend>
+      <p class="hint">Nivel del Marco Europeo: A1–A2 básico, B1–B2 intermedio, C1–C2 avanzado. En hostelería alemana piden sobre todo B1.</p>
+      <div class="list">${lg}</div><button type="button" class="btn add" data-add="languages" style="margin-top:10px">+ Añadir idioma</button></fieldset>
+    <fieldset class="group"><legend>Lo demás</legend>
+      <div class="row">
+        ${field("cv", "skills", "Competencias (separadas por comas)", "text", "Caja y TPV, carta de vinos, alérgenos, atención en inglés", "wide")}
+        ${field("cv", "license", "Carné de conducir", "text", "B, con coche propio")}
+        ${field("cv", "availableFrom", "Disponible desde", "date")}
+        ${field("cv", "other", "Otros datos (opcional)", "text", "Certificado de manipuladora de alimentos", "wide")}
+      </div></fieldset>`;
+}
+function renderPrefsForm() {
+  const chip = (scope, key, [es, de]) => `<label class="chip-opt"><input type="checkbox" data-multi="${scope}:${key}" value="${esc(de)}" ${prefs[key].includes(de) ? "checked" : ""}><span>${esc(es)}<small>${esc(de)}</small></span></label>`;
+  $("#prefs-form").innerHTML = `
+    <fieldset class="group"><legend>Dónde</legend>
+      <div class="row">${field("prefs", "zones", "Zonas o ciudades (separadas por comas)", "text", "Baviera, Alpes, Mar del Norte, Múnich, Berlín… o «toda Alemania»", "wide")}</div></fieldset>
+    <fieldset class="group"><legend>De qué</legend>
+      <div class="chips">${ROLES.map(r => chip("prefs", "roles", r)).join("")}</div>
+      <div class="row" style="margin-top:12px">
+        ${field("prefs", "keywords", "Palabras clave extra", "text", "4 Sterne, Hotel am See, Spanisch", "wide")}
+        ${field("prefs", "exclude", "Lo que NO quieres", "text", "turnos partidos, Systemgastronomie, Zeitarbeit", "wide")}</div></fieldset>
+    <fieldset class="group"><legend>Condiciones</legend>
+      <div class="f" style="margin-bottom:8px">Alojamiento del personal (Personalunterkunft)</div>
+      <div class="chips" role="radiogroup">${[["obligatorio", "Imprescindible"], ["preferible", "Mejor si hay"], ["igual", "Me da igual"]].map(([v, t]) =>
+        `<label class="chip-opt"><input type="radio" name="f-prefs-accommodation" id="f-prefs-acc-${v}" data-bind="prefs:accommodation" value="${v}" ${prefs.accommodation === v ? "checked" : ""}><span>${t}</span></label>`).join("")}</div>
+      <div class="f" style="margin:14px 0 8px">Tipo de contrato</div>
+      <div class="chips">${CONTRACTS.map(r => chip("prefs", "contract", r)).join("")}</div>
+      <div class="row" style="margin-top:14px">
+        ${field("prefs", "startFrom", "Puedo empezar desde", "date")}
+        ${field("prefs", "salaryMin", "Sueldo mínimo (€ brutos/mes)", "number", "2100")}
+        ${field("prefs", "notes", "Algo más que Claude deba saber", "textarea", "Prefiero hoteles grandes. Si hay alojamiento, que sea habitación individual.", "wide")}</div></fieldset>`;
+}
+
+/* ---------- CV sheet ---------- */
+function trSource() {
+  return { headline: cv.headline, summary: cv.summary, nationality: cv.nationality, city: cv.city, skills: cv.skills, license: cv.license, other: cv.other,
+    experience: cv.experience.map(e => ({ role: e.role, place: e.place, tasks: e.tasks })),
+    education: cv.education.map(e => ({ title: e.title, place: e.place })),
+    languages: cv.languages.map(e => ({ lang: e.lang })) };
+}
+function trState(lg) {
+  if (lg === "es") return "na";
+  const t = cv.tr?.[lg]; if (!t) return "none";
+  return t.src === hash(JSON.stringify(trSource())) ? "fresh" : "stale";
+}
+function viewCv(lg) {
+  const v = clone(cv); const t = lg !== "es" && cv.tr?.[lg]?.data;
+  if (!t) return v;
+  for (const k of ["headline", "summary", "nationality", "city", "skills", "license", "other"]) if (t[k] != null && v[k]) v[k] = t[k];
+  for (const k of ["experience", "education", "languages"]) (t[k] || []).forEach((row, i) => { if (v[k][i]) for (const f in row) if (v[k][i][f] && row[f]) v[k][i][f] = row[f] });
+  return v;
+}
+function sheetHtml(lg) {
+  const t = L[lg], v = viewCv(lg), ph = s => `<span class="s-placeholder">${esc(s)}</span>`;
+  const range = (a, b, cur) => (a || b || cur) ? `${fmtMonth(a)} – ${cur ? t.now : fmtMonth(b)}` : "";
+  const contact = [v.phone, v.email, v.city].filter(Boolean).map(esc).join("</span><span>");
+  const persons = [[t.birth, fmtDate(v.birth, lg)], [t.nat, v.nationality]].filter(r => r[1]);
+  const exp = v.experience.filter(e => e.role || e.company);
+  const edu = v.education.filter(e => e.title || e.school);
+  const lgs = v.languages.filter(e => e.lang);
+  const others = [[t.license, v.license], [t.avail, fmtDate(v.availableFrom, lg)], ["", v.other]].filter(r => r[1]);
+  const sec = (title, body) => `<section class="s-sec"><h3>${esc(title)}</h3>${body}</section>`;
+  const item = (when, what) => `<div class="s-item"><div class="s-when">${when}</div><div class="s-what">${what}</div></div>`;
+  return `<div class="sheet">
+    <div class="s-head"><div style="min-width:0">
+        <div class="s-doc">${esc(t.doc)}</div>
+        <div class="s-name">${v.name ? esc(v.name) : ph("Tu nombre")}</div>
+        <div class="s-title">${v.headline ? esc(v.headline) : ph("Qué trabajo buscas")}</div>
+        <div class="s-contact">${contact ? `<span>${contact}</span>` : ph("Teléfono · correo · ciudad")}</div></div>
+      ${v.photo ? `<img class="s-photo" src="${v.photo}" alt="">` : ""}</div>
+    ${persons.length ? sec(t.personal, persons.map(([k, x]) => item(esc(k), esc(x))).join("")) : ""}
+    ${sec(t.profile, v.summary ? `<p class="s-sum">${esc(v.summary)}</p>` : ph("Dos o tres frases sobre ti"))}
+    ${sec(t.exp, exp.length ? exp.map(e => item(range(e.from, e.to, e.current),
+      `<b>${esc(e.role)}</b>${e.company ? ` · ${esc(e.company)}` : ""}${e.place ? `<span class="s-sub">, ${esc(e.place)}</span>` : ""}
+       ${lines(e.tasks).length ? `<ul>${lines(e.tasks).map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}`)).join("") : ph("Añade tus trabajos en el formulario"))}
+    ${edu.length ? sec(t.edu, edu.map(e => item(range(e.from, e.to), `<b>${esc(e.title)}</b>${e.school ? `<br><span class="s-sub">${esc(e.school)}${e.place ? ", " + esc(e.place) : ""}</span>` : ""}`)).join("")) : ""}
+    ${lgs.length ? sec(t.langs, lgs.map(e => item(esc(e.lang), e.native ? esc(t.native) : `${esc(e.level)} · ${esc(t.lv[e.level] || "")}`)).join("")) : ""}
+    ${v.skills ? sec(t.skills, `<p class="s-sum">${esc(v.skills)}</p>`) : ""}
+    ${others.length ? sec(t.other, others.map(([k, x]) => item(esc(k), esc(x))).join("")) : ""}
+    <div class="s-sign"><span>${esc(t.place)}: ________________</span><span class="line">${esc(v.name || "")}</span></div>
+  </div>`;
+}
+function renderPreview() {
+  $("#sheet-scale").innerHTML = sheetHtml(lang);
+  fitSheet();
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  const st = trState(lang), note = $("#tr-note"), btn = $("#btn-translate");
+  btn.hidden = lang === "es";
+  btn.textContent = st === "stale" ? "Actualizar traducción" : "Traducir con IA";
+  note.className = "note" + (st === "none" || st === "stale" ? " warn" : "");
+  const name = lang === "de" ? "alemán" : "inglés";
+  note.textContent = st === "na" ? "Versión en español, tal como lo escribes."
+    : st === "fresh" ? `Contenido traducido al ${name}. Revísalo antes de enviarlo.`
+    : st === "stale" ? `Has cambiado cosas desde la última traducción al ${name}. Pulsa «Actualizar traducción».`
+    : `Los títulos ya están en ${name}; tu texto sigue en español. Pulsa «Traducir con IA».`;
+}
+function fitSheet() {
+  const wrap = $("#sheet-wrap"), sc = $("#sheet-scale"), sheet = sc.firstElementChild; if (!sheet) return;
+  const k = Math.min(1, wrap.clientWidth / 794);
+  sc.style.transform = `scale(${k})`; wrap.style.height = sheet.offsetHeight * k + "px";
+}
+new ResizeObserver(fitSheet).observe($("#sheet-wrap"));
+
+/* ---------- saving ---------- */
+const timers = {}, busy = {}, again = {};
+function save(which) {
+  clearTimeout(timers[which]); setStatus("Guardando…", "busy");
+  timers[which] = setTimeout(() => flush(which), 900);
+}
+async function flush(which) {
+  if (busy[which]) { again[which] = true; return }
+  busy[which] = true;
+  const { error } = await sb.from("docs").upsert({ key: which, data: clone(which === "cv" ? cv : prefs), updated_at: new Date().toISOString() });
+  setStatus(error ? "No se ha podido guardar. Revisa la conexión." : "Guardado", error ? "err" : "ok");
+  busy[which] = false;
+  if (again[which]) { again[which] = false; flush(which) }
+}
+
+/* ---------- events: forms ---------- */
+document.addEventListener("input", e => {
+  const b = e.target.dataset?.bind; if (!b) return;
+  const [scope, path] = b.split(":");
+  const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+  setPath(scope === "cv" ? cv : prefs, path, val);
+  if (scope === "cv") { renderPreview(); if (e.target.type === "checkbox") renderCvForm() }
+  save(scope);
+});
+document.addEventListener("change", e => {
+  const m = e.target.dataset?.multi; if (!m) return;
+  const [, key] = m.split(":"); const set = new Set(prefs[key]);
+  e.target.checked ? set.add(e.target.value) : set.delete(e.target.value);
+  prefs[key] = [...set]; save("prefs");
+});
+$("#cv-form").addEventListener("click", e => {
+  const a = e.target.closest("[data-add],[data-del],[data-move],#photo-del"); if (!a) return;
+  if (a.id === "photo-del") cv.photo = "";
+  else if (a.dataset.add) cv[a.dataset.add].push(LISTS[a.dataset.add].blank());
+  else if (a.dataset.del) { const [l, i] = a.dataset.del.split(":"); cv[l].splice(+i, 1) }
+  else { const [l, i, d] = a.dataset.move.split(":"); const arr = cv[l], j = +i + +d; [arr[i], arr[j]] = [arr[j], arr[i]] }
+  renderCvForm(); renderPreview(); save("cv");
+});
+$("#cv-form").addEventListener("change", e => {
+  if (e.target.id !== "f-photo" || !e.target.files[0]) return;
+  const r = new FileReader();
+  r.onload = () => { const img = new Image(); img.onload = () => {
+    const W = 350, H = 450, c = document.createElement("canvas"); c.width = W; c.height = H;
+    const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    cv.photo = c.toDataURL("image/jpeg", 0.85); renderCvForm(); renderPreview(); save("cv");
+  }; img.src = r.result };
+  r.readAsDataURL(e.target.files[0]);
+});
+$("#cv-form").addEventListener("submit", e => e.preventDefault());
+$("#prefs-form").addEventListener("submit", e => e.preventDefault());
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => { lang = b.dataset.lang; renderPreview() }));
+
+/* ---------- AI: translate CV ---------- */
+$("#btn-translate").addEventListener("click", async () => {
+  const btn = $("#btn-translate"), target = lang, src = trSource();
+  btn.disabled = true; btn.textContent = "Traduciendo…";
+  try {
+    const { data } = await ai("translate", { lang: target, source: src });
+    cv.tr = cv.tr || {}; cv.tr[target] = { data, src: hash(JSON.stringify(src)), at: new Date().toISOString() };
+    save("cv"); renderPreview();
+  } catch (e) { $("#tr-note").className = "note warn"; $("#tr-note").textContent = e.message }
+  btn.disabled = false; if (btn.textContent === "Traduciendo…") renderPreview();
+});
+
+/* ---------- PDF ---------- */
+$("#btn-pdf").addEventListener("click", async () => {
+  const btn = $("#btn-pdf");
+  btn.disabled = true; btn.textContent = "Creando PDF…";
+  try {
+    const stage = $("#pdfstage"); stage.innerHTML = sheetHtml(lang);
+    await document.fonts.ready;
+    const canvas = await html2canvas(stage.firstElementChild, { scale: 2, backgroundColor: "#ffffff" });
+    stage.innerHTML = "";
+    const pdf = new jspdf.jsPDF({ unit: "mm", format: "a4" });
+    const pageH = Math.floor(canvas.width * 297 / 210);
+    for (let y = 0, p = 0; y < canvas.height - 4; y += pageH, p++) {
+      const h = Math.min(pageH, canvas.height - y), part = document.createElement("canvas");
+      part.width = canvas.width; part.height = h;
+      const ctx = part.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, part.width, h);
+      ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      if (p) pdf.addPage();
+      pdf.addImage(part.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, h * 210 / canvas.width);
+    }
+    const first = (cv.name || "Paola").trim().split(/\s+/).join("_");
+    pdf.save(`${{ de: "Lebenslauf", en: "CV", es: "CV" }[lang]}_${first}_${lang.toUpperCase()}.pdf`);
+  } catch { $("#tr-note").textContent = "No se ha podido crear el PDF. Prueba otra vez." }
+  finally { btn.disabled = false; btn.textContent = "Descargar PDF" }
+});
+
+/* ---------- jobs ---------- */
+async function loadJobs() {
+  const { data, error } = await sb.from("jobs").select("*").order("added_at", { ascending: false }).limit(400);
+  if (!error) { jobs = data; renderJobs() }
+}
+const jobVisible = j => filter === "activas" ? j.status !== "descartada" : j.status === filter;
+const scoreClass = s => s == null ? "lo" : s >= 75 ? "hi" : s >= 50 ? "mid" : "lo";
+function renderFilters() {
+  const counts = { activas: jobs.filter(j => j.status !== "descartada").length };
+  STATUSES.forEach(([k]) => counts[k] = jobs.filter(j => j.status === k).length);
+  const opts = [["activas", "Activas"], ...STATUSES.filter(([k]) => k !== "descartada"), ["descartada", "Descartadas"]];
+  $("#filters").innerHTML = opts.filter(([k]) => k === "activas" || counts[k]).map(([k, t]) =>
+    `<button type="button" data-filter="${k}" aria-pressed="${filter === k}">${t}<span class="c">${counts[k]}</span></button>`).join("");
+  $("#jobs-count").textContent = counts.activas;
+  $("#btn-score").hidden = !jobs.some(j => j.score == null && j.status !== "descartada");
+}
+function renderJobs() {
+  renderFilters();
+  const list = jobs.filter(jobVisible).sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || String(b.added_at).localeCompare(String(a.added_at)));
+  const el = $("#jobs");
+  if (!jobs.length) { el.innerHTML = `<div class="empty"><h3>Aún no hay ofertas</h3><p>Rellena <b>Qué busco</b> y Claude dejará aquí las primeras en la próxima búsqueda.<br>También puedes pegar una oferta arriba.</p></div>`; return }
+  if (!list.length) { el.innerHTML = `<div class="empty"><p>Nada en este filtro.</p></div>`; return }
+  el.innerHTML = list.map(j => {
+    const acc = j.accommodation === true ? `<span class="tag home">Con alojamiento</span>` : j.accommodation === false ? `<span class="tag nohome">Sin alojamiento</span>` : "";
+    const tags = [acc, ...[j.contract, j.salary, j.german_level && "Alemán: " + j.german_level, j.source].filter(Boolean).map(x => `<span class="tag">${esc(x)}</span>`)].join("");
+    const open = openLetters.has(j.id), working = busyJobs.has(j.id), err = jobErrors[j.id];
+    return `<article class="job ${j.status === "descartada" ? "descartada" : ""}" data-id="${esc(j.id)}">
+      <div class="score ${scoreClass(j.score)}" title="Encaje con tu perfil">${j.score == null ? "–" : Math.round(j.score)}<small>encaje</small></div>
+      <div style="min-width:0">
+        <h3>${esc(j.title)}</h3>
+        <div class="meta">${esc(j.company || "")}${j.location ? " · " + esc(j.location) : ""}${j.posted ? " · " + esc(fmtDate(j.posted, "de")) : ""}</div>
+        <div class="tags">${tags}</div>
+        ${j.summary ? `<p>${esc(j.summary)}</p>` : ""}
+        ${j.why ? `<p class="why"><b>Por qué encaja:</b> ${esc(j.why)}</p>` : ""}
+        <div class="job-acts">
+          ${j.url ? `<a class="btn small primary" href="${esc(j.url)}" target="_blank" rel="noopener">Ver oferta</a>` : ""}
+          <button type="button" class="btn small" data-act="letter" ${working ? "disabled" : ""}>${working ? "Escribiendo…" : j.letter ? (open ? "Ocultar carta" : "Ver carta") : "Escribir carta (alemán)"}</button>
+          <select data-act="status" id="st-${esc(j.id)}" aria-label="Estado">${STATUSES.map(([k, t]) => `<option value="${k}" ${j.status === k ? "selected" : ""}>${t}</option>`).join("")}</select>
+        </div>
+        ${open && j.letter ? `<div class="letter"><textarea id="letter-${esc(j.id)}" data-act="letter-edit" aria-label="Carta de presentación">${esc(j.letter)}</textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn small" data-act="copy">Copiar</button>
+          <button type="button" class="btn small ghost" data-act="regen">Escribir otra</button><span class="note" data-msg></span></div></div>` : ""}
+        ${err ? `<p class="err">${esc(err)}</p>` : ""}
+      </div></article>`;
+  }).join("");
+}
+$("#filters").addEventListener("click", e => { const b = e.target.closest("[data-filter]"); if (b) { filter = b.dataset.filter; renderJobs() } });
+
+async function writeLetter(j) {
+  busyJobs.add(j.id); delete jobErrors[j.id]; renderJobs();
+  try { const { letter } = await ai("letter", { jobId: j.id }); j.letter = letter; openLetters.add(j.id) }
+  catch (e) { jobErrors[j.id] = e.message }
+  busyJobs.delete(j.id); renderJobs();
+}
+$("#jobs").addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  const id = a.closest(".job").dataset.id, j = jobs.find(x => x.id === id); if (!j) return;
+  const act = a.dataset.act;
+  if (act === "letter") { if (j.letter) { openLetters.has(id) ? openLetters.delete(id) : openLetters.add(id); renderJobs() } else writeLetter(j) }
+  else if (act === "regen") writeLetter(j);
+  else if (act === "copy") {
+    const ta = document.getElementById("letter-" + id), msg = a.parentElement.querySelector("[data-msg]");
+    navigator.clipboard.writeText(ta.value).then(() => msg.textContent = "Copiada", () => { ta.select(); msg.textContent = "Pulsa Ctrl+C para copiar" });
+  }
+});
+$("#jobs").addEventListener("change", async e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  const id = a.closest(".job").dataset.id, j = jobs.find(x => x.id === id);
+  if (a.dataset.act === "status") {
+    j.status = a.value; renderJobs();
+    const { error } = await sb.from("jobs").update({ status: a.value, status_at: new Date().toISOString() }).eq("id", id);
+    if (error) setStatus("No se ha podido guardar", "err");
+  }
+  if (a.dataset.act === "letter-edit") { j.letter = a.value; await sb.from("jobs").update({ letter: a.value }).eq("id", id) }
+});
+
+$("#btn-score").addEventListener("click", async () => {
+  const btn = $("#btn-score"); btn.disabled = true; btn.textContent = "Puntuando…";
+  try { await ai("score"); await loadJobs(); btn.textContent = "Puntuar con mi CV" }
+  catch (e) { btn.textContent = e.message }
+  btn.disabled = false;
+});
+
+$("#add-go").addEventListener("click", async () => {
+  const url = $("#add-url").value.trim(), text = $("#add-text").value.trim(), msg = $("#add-msg");
+  if (text.length < 80) { msg.textContent = "Pega el texto completo de la oferta (al menos unas líneas)."; return }
+  const btn = $("#add-go"); btn.disabled = true; msg.textContent = "Analizando…";
+  try {
+    await ai("analyze", { url, text });
+    $("#add-url").value = ""; $("#add-text").value = ""; msg.textContent = "Añadida."; filter = "activas"; await loadJobs();
+  } catch (e) { msg.textContent = e.message }
+  btn.disabled = false;
+});
+
+/* ---------- search ---------- */
+let searchPoll = null;
+function renderMeta(m) {
+  const at = m?.lastSearch ? new Date(m.lastSearch).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" }) : null;
+  $("#last-search").textContent = m?.searching ? "Buscando ahora…" : at ? `${at}${m.found != null ? ` · ${m.found} nuevas` : ""}` : "Todavía ninguna";
+  const msg = m?.searching ? "Buscando ofertas… tarda un par de minutos." : m?.error || "";
+  ["#search-msg", "#search-msg2"].forEach(s => $(s).textContent = msg);
+  ["#btn-search", "#btn-search2"].forEach(s => $(s).disabled = !!m?.searching);
+}
+async function loadMeta() {
+  const { data } = await sb.from("docs").select("data").eq("key", "meta").maybeSingle();
+  const m = data?.data; renderMeta(m);
+  if (m?.searching && !searchPoll) searchPoll = setInterval(async () => {
+    const { data: d } = await sb.from("docs").select("data").eq("key", "meta").maybeSingle();
+    renderMeta(d?.data);
+    if (!d?.data?.searching) { clearInterval(searchPoll); searchPoll = null; loadJobs(); refreshSpend() }
+  }, 10000);
+}
+async function searchNow() {
+  ["#btn-search", "#btn-search2"].forEach(s => $(s).disabled = true);
+  ["#search-msg", "#search-msg2"].forEach(s => $(s).textContent = "Empezando…");
+  try {
+    const r = await ai("search", { manual: true });
+    if (r?.busy) ["#search-msg", "#search-msg2"].forEach(s => $(s).textContent = "Ya hay una búsqueda en marcha.");
+    setTimeout(loadMeta, 1500);
+  } catch (e) {
+    ["#search-msg", "#search-msg2"].forEach(s => $(s).textContent = e.message);
+    ["#btn-search", "#btn-search2"].forEach(s => $(s).disabled = false);
+  }
+}
+$("#btn-search").addEventListener("click", searchNow);
+$("#btn-search2").addEventListener("click", searchNow);
+
+async function refreshSpend() {
+  const start = new Date(); start.setDate(1); start.setHours(0, 0, 0, 0);
+  const { data } = await sb.from("ai_usage").select("cost_usd").gte("at", start.toISOString());
+  const total = (data || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
+  $("#spend").textContent = `IA este mes: ${total.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $ de ${MONTHLY_CAP} $`;
+}
+
+/* ---------- tabs ---------- */
+function showTab(t) {
+  if (!["cv", "busqueda", "ofertas"].includes(t)) t = "cv";
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === t)));
+  ["cv", "busqueda", "ofertas"].forEach(k => $("#view-" + k).hidden = k !== t);
+  if (t === "cv") fitSheet();
+  try { history.replaceState(null, "", "#" + t) } catch {}
+}
+document.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+/* ---------- auth & boot ---------- */
+function renderAll() {
+  renderCvForm(); renderPrefsForm(); renderPreview(); renderJobs();
+  const first = (cv.name || "").trim().split(/\s+/)[0];
+  $("#hello").textContent = `${first || "Paola"}, a por el próximo trabajo`;
+}
+async function start() {
+  if (started) return; started = true;
+  $("#login").hidden = true; $("#app").hidden = false;
+  showTab((location.hash || "").slice(1));
+  renderAll();
+  const { data: allowed } = await sb.rpc("is_allowed");
+  if (!allowed) { banner("<b>Este correo no tiene acceso.</b> Pide a Nacho que lo añada."); setStatus("Sin acceso", "err"); return }
+  const { data, error } = await sb.from("docs").select("key,data").in("key", ["cv", "prefs"]);
+  if (error) { setStatus("No se han podido cargar tus datos", "err"); return }
+  for (const r of data) { if (r.key === "cv") cv = { ...blankCv(), ...r.data }; if (r.key === "prefs") prefs = { ...blankPrefs(), ...r.data } }
+  setStatus("Todo guardado", "ok");
+  renderAll(); loadJobs(); loadMeta(); refreshSpend();
+  setInterval(() => { if (!document.hidden && !busyJobs.size) loadJobs() }, 120000);
+}
+$("#login-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#login-email").value.trim().toLowerCase(), msg = $("#login-msg");
+  $("#login-go").disabled = true; msg.textContent = "Enviando…";
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+  msg.textContent = error ? (/rate/i.test(error.message) ? "Has pedido demasiados enlaces. Espera unos minutos." : "No se ha podido enviar el enlace. Revisa el correo.") : "Listo. Abre el correo y pulsa el enlace desde este mismo dispositivo.";
+  $("#login-go").disabled = false;
+});
+$("#logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload() });
+
+sb.auth.onAuthStateChange((_ev, session) => { if (session) setTimeout(start, 0) });
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); else $("#login").hidden = false });
+})();
+</script>
+</body>
+</html>
