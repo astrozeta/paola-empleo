@@ -6,7 +6,7 @@ import nodemailer from "npm:nodemailer@6.9.15";
 // All AI work for Paola's job app runs here, billed to the owner's Anthropic API key.
 const MODEL = "claude-opus-5-5";
 const PRICE = { input: 4 / 1e6, output: 20 / 1e6, search: 10 / 1000 };
-const MONTHLY_CAP_USD = Number(Deno.env.get("MONTHLY_CAP_USD") ?? "25");
+const MONTHLY_CAP_USD = Number(Deno.env.get("MONTHLY_CAP_USD") ?? "50");
 const MIN_SAVE_SCORE = 40;
 
 const cors = {
